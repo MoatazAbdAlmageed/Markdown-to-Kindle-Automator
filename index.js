@@ -70,28 +70,64 @@ async function sendToKindle(filePath) {
 
 /**
  * Converts Markdown to EPUB using Pandoc
- * Optimized for Kindle compatibility
+ * Optimized for Kindle with Arabic/Mixed content support
  */
-function convertToEpub(mdPath) {
+async function convertToEpub(mdPath) {
+    const fileName = path.basename(mdPath, '.md');
+    const epubPath = path.join(PROCESSED_DIR, `${fileName}.epub`);
+    const cssPath = path.join(PROCESSED_DIR, 'kindle_style.css');
+
+    logToFile(`[CONVERT] Starting conversion: ${path.basename(mdPath)}`);
+
+    // 1. Detect if the file contains Arabic characters
+    const content = await fs.readFile(mdPath, 'utf8');
+    const hasArabic = /[\u0600-\u06FF]/.test(content);
+    
+    // 2. Create/Ensure custom CSS for better BiDi (Bidirectional) support on Kindle
+    const customCss = `
+        body { 
+            direction: ${hasArabic ? 'rtl' : 'ltr'}; 
+            text-align: ${hasArabic ? 'right' : 'left'}; 
+            unicode-bidi: embed;
+        }
+        p, h1, h2, h3, h4, li { 
+            direction: ${hasArabic ? 'rtl' : 'ltr'};
+        }
+        code, pre { 
+            direction: ltr !important; 
+            text-align: left !important; 
+            unicode-bidi: bidi-override;
+        }
+    `;
+    await fs.writeFile(cssPath, customCss);
+
+    // 3. Prepare Pandoc arguments
+    let pandocArgs = [
+        `"${mdPath}"`,
+        `-o "${epubPath}"`,
+        `-t epub3`,
+        `--standalone`,
+        `--css "${cssPath}"`,
+        `--metadata title="${fileName}"`
+    ];
+
+    if (hasArabic) {
+        logToFile(`[INFO] Arabic detected in ${fileName}. Applying RTL settings and Page Progression.`);
+        pandocArgs.push(`-V lang=ar`);
+        pandocArgs.push(`-V dir=rtl`);
+        // This is the key for scrolling/page turning direction in EPUB3
+        pandocArgs.push(`-V page-progression-direction=rtl`);
+    }
+
+    const pandocCmd = `pandoc ${pandocArgs.join(' ')}`;
+
     return new Promise((resolve, reject) => {
-        const fileName = path.basename(mdPath, '.md');
-        const epubPath = path.join(PROCESSED_DIR, `${fileName}.epub`);
-
-        logToFile(`[CONVERT] Starting conversion: ${path.basename(mdPath)}`);
-
-        // Kindle compatibility + RTL Support (Arabic/English mix):
-        // - -t epub3: Best for modern Kindle features
-        // - -V lang=ar: Sets the main language to Arabic
-        // - -V dir=rtl: Forces Right-to-Left direction
-        // - --standalone: Essential for proper file structure
-        const pandocCmd = `pandoc "${mdPath}" -o "${epubPath}" -t epub3 --standalone --metadata title="${fileName}" -V lang=ar -V dir=rtl`;
-
         exec(pandocCmd, (error, stdout, stderr) => {
             if (error) {
                 logToFile(`[ERROR] Pandoc failed: ${stderr || error.message}`);
                 return reject(error);
             }
-            logToFile(`[SUCCESS] Converted to EPUB (Kindle-optimized): ${path.basename(epubPath)}`);
+            logToFile(`[SUCCESS] Converted to EPUB (${hasArabic ? 'RTL' : 'LTR'}): ${path.basename(epubPath)}`);
             resolve(epubPath);
         });
     });
