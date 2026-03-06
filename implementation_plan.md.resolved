@@ -1,0 +1,55 @@
+# Implementation Plan: Markdown to Kindle Automator
+
+This project will automate the process of converting Markdown files to EPUB and sending them to your Kindle device.
+
+## Components
+
+1.  **File Watcher**: Monitors `C:\Users\HP\Downloads_kindle` for new `.md` files.
+2.  **Converter**: Uses `pandoc` to convert `.md` to `.epub`.
+3.  **Mailer**: Uses `nodemailer` to send the generated `.epub` to the Kindle email address.
+4.  **CLI/Service**: A persistent process that runs in the background.
+
+## Technology Stack
+
+- **Runtime**: Node.js
+- **Libraries**:
+    - `chokidar`: Reliable file system watching.
+    - `nodemailer`: Sending emails.
+    - `dotenv`: Environment variable management.
+    - `fs-extra`: Extended file system operations.
+- **External Dependency**: `pandoc` (must be installed on Windows).
+
+## Steps
+
+### 1. Initialization
+- Create `package.json`.
+- Install dependencies: `npm install chokidar nodemailer dotenv fs-extra`.
+
+### 2. Configuration
+- Create a `.env` file to store:
+    - SMTP server details (e.g., Host, Port, User, Pass).
+    - Kindle destination email.
+    - Watch directory path.
+
+### 3. Core Logic (`index.js`)
+- Initialize `chokidar` on the watch directory.
+- On `add` event (new file):
+    1. Check if it's a `.md` file.
+    2. Run `pandoc` via `child_process.exec` to convert it to `.epub`.
+    3. Send the `.epub` via `nodemailer`.
+    4. (Optional) Move the original/epub to a 'processed' folder.
+
+### 4. Setup Instructions
+- Guide the user to install Pandoc.
+- Guide the user to add their sender email to Kindle's "Approved Personal Document E-mail List".
+- How to get a Gmail App Password (if using Gmail).
+
+## Proposed Directory Structure
+```
+md_to_epub_for_windows/
+├── .env
+├── .gitignore
+├── index.js
+├── package.json
+└── README.md
+```

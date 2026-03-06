@@ -1,0 +1,23 @@
+{
+  "name": "md_to_epub_for_windows",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "pm2 start index.js --name kindle-monitor",
+    "stop": "pm2 stop kindle-monitor",
+    "restart": "pm2 restart kindle-monitor",
+    "logs": "pm2 logs kindle-monitor",
+    "status": "pm2 status"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "dotenv": "^17.3.1",
+    "fs-extra": "^11.3.4",
+    "nodemailer": "^8.0.1"
+  }
+}
