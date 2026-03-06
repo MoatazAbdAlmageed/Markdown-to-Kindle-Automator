@@ -70,6 +70,7 @@ async function sendToKindle(filePath) {
 
 /**
  * Converts Markdown to EPUB using Pandoc
+ * Optimized for Kindle compatibility
  */
 function convertToEpub(mdPath) {
     return new Promise((resolve, reject) => {
@@ -78,12 +79,19 @@ function convertToEpub(mdPath) {
 
         logToFile(`[CONVERT] Starting conversion: ${path.basename(mdPath)}`);
 
-        exec(`pandoc "${mdPath}" -o "${epubPath}"`, (error, stdout, stderr) => {
+        // Kindle compatibility + RTL Support (Arabic/English mix):
+        // - -t epub3: Best for modern Kindle features
+        // - -V lang=ar: Sets the main language to Arabic
+        // - -V dir=rtl: Forces Right-to-Left direction
+        // - --standalone: Essential for proper file structure
+        const pandocCmd = `pandoc "${mdPath}" -o "${epubPath}" -t epub3 --standalone --metadata title="${fileName}" -V lang=ar -V dir=rtl`;
+
+        exec(pandocCmd, (error, stdout, stderr) => {
             if (error) {
                 logToFile(`[ERROR] Pandoc failed: ${stderr || error.message}`);
                 return reject(error);
             }
-            logToFile(`[SUCCESS] Converted to EPUB: ${path.basename(epubPath)}`);
+            logToFile(`[SUCCESS] Converted to EPUB (Kindle-optimized): ${path.basename(epubPath)}`);
             resolve(epubPath);
         });
     });
