@@ -30,14 +30,14 @@ Start the monitor:
 node index.js
 ```
 
-Any `.md` file dropped into `C:\Users\HP\Downloads_kindle` will be:
+Any `.md` file dropped into `C:\Users\HP\Downloads\_kindle` will be:
 1.  Detected.
-2.  Converted to `.epub`.
-3.  Emailed to your Kindle.
-4.  Moved to the `done/` subfolder.
+2.  Converted to `.epub` with the title extracted from the Markdown header.
+3.  Emailed to your Kindle (using the title as both the filename and email subject).
+4.  Moved to the `processed/` subfolder and **renamed to match the Title**.
 5.  Logged in `activity.log`.
 
-You can check `C:\Users\HP\Downloads_kindle\activity.log` at any time to see the status of your files (Converted, Sent, Failed).
+You can check `C:\Users\HP\Downloads\_kindle\activity.log` at any time to see the status of your files (Converted, Sent, Failed).
 
 ## Background Execution (Optional)
 

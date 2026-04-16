@@ -1,3 +1,3 @@
-; AutoHotkey script to start Kindle Monitor on Windows Startup
-SetWorkingDir, c:\xampp\htdocs\md_to_epub_for_windows
-Run, npm start,, Hide
+; AutoHotkey v2
+SetWorkingDir "C:\xampp\htdocs\md_to_epub_for_windows"
+Run "C:\Windows\System32\cmd.exe /c npm start", , "Hide"
